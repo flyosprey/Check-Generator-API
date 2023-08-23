@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    .container {
+        margin: auto;
+        padding: 20px;
+        width: 500px;
+        border: 2px solid #000;
+    }
+    .header {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .divider {
+        border-top: 2px solid #000;
+        margin: 10px 0;
+    }
+    .item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+    .total {
+        font-weight: bold;
+    }
+    .footer {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        {{check.buyer_name}}
+        <br>================================================
+    </div>
+    {% for product in check.products %}
+        <div class="item">
+            <span>{{'%0.2f'|format(product.quantity)}} x {{'%0.2f'|format(product.price)}}</span>
+        </div>
+        <div class="item">
+            <span>{{product.name}}</span>
+            <span>{{'%0.2f'|format(product.total)}}</span>
+        </div>
+        <div class="divider"></div>
+    {% endfor %}
+    <div class="header">
+        ================================================
+    </div>
+    <div class="item total">
+        <span>СУМА</span>
+        <span>{{'%0.2f'|format(check.total)}}</span>
+    </div>
+    <div class="item">
+        {% if check.payment_type == "cash" %}
+            <span>Готівка</span>
+        {% else %}
+            <span>Картка</span>
+        {% endif %}
+        <span>{{'%0.2f'|format(check.payment_amount)}}</span>
+    </div>
+    <div class="item">
+        <span>Решта</span>
+        <span>{{'%0.2f'|format(check.rest)}}</span>
+    </div>
+    <div class="header">
+        ================================================
+    </div>
+    <div class="footer">
+        {{check.created_at.strftime('%d.%m.%Y %H:%M')}}
+        <br>Дякуємо за покупку!
+    </div>
+</div>
+</body>
+</html>
+
+>
