@@ -88,3 +88,9 @@ Create a new check by providing the necessary details such as buyer name, amount
 ## Additional
 
 1. **You can change develop environment to QA or DEV.**
+
+
+## Examples
+
+![HTML CHECK](imgs/check_html.png)
+![HTML CHECK](imgs/swagger.png)
