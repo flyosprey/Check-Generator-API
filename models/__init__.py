@@ -1,3 +1,3 @@
 from database import Base
-from models.auth import Users
-from models.check import Products, Checks
+from models.auth_model import Users
+from models.check_model import Products, Checks

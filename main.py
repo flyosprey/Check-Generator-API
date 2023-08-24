@@ -3,7 +3,7 @@ from fastapi import FastAPI
 
 import models
 from database import engine
-from routers import auth, check
+from controlers import auth, check
 
 
 app = FastAPI()

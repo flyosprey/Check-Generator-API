@@ -73,10 +73,10 @@ async def test_full_user_life_circle(
 @pytest.mark.asyncio
 async def test_html_check_not_found(test_client):
     client = await anext(test_client)
-    response = await client.get("/checks/-1/")
+    response = await client.get("/checks/-1/signature/")
     response_data = response.json()
-    assert response.status_code == 404
-    assert response_data["detail"] == "Check not found"
+    assert response.status_code == 400
+    assert response_data["detail"] == "Invalid signature"
 
 
 @pytest.mark.asyncio
@@ -85,7 +85,7 @@ async def test_login_wrong_creds(test_client):
     for key in LOGIN_USER_CREDS:
         creds = {**LOGIN_USER_CREDS}
         del creds[key]
-        token_response = await client.post("/auth/token/", data=creds)
+        token_response = await client.post("/login/", data=creds)
         response_data = token_response.json()
         assert token_response.status_code == 422
         assert response_data["detail"][0]["msg"] == "field required"
@@ -130,7 +130,7 @@ async def test_create_user_bad_payload(test_client):
     for key in CREATE_USER_CREDS:
         creds = {**CREATE_USER_CREDS}
         del creds[key]
-        response = await client.post("/auth/users/", json=creds)
+        response = await client.post("/sign-up/", json=creds)
         response_data = response.json()
         assert response.status_code == 422
         assert response_data["detail"][0]["msg"] == "field required"
@@ -142,7 +142,7 @@ async def test_login_bad_payload(test_client):
     for key in CREATE_USER_CREDS:
         creds = {**CREATE_USER_CREDS}
         del creds[key]
-        response = await client.post("/auth/token/", json=creds)
+        response = await client.post("/login/", json=creds)
         response_data = response.json()
         assert response.status_code == 422
         assert response_data["detail"][0]["msg"] == "field required"
@@ -151,7 +151,7 @@ async def test_login_bad_payload(test_client):
 @pytest.mark.asyncio
 async def test_lock_endpoints_without_token(test_client):
     client = await anext(test_client)
-    response = await client.delete("/auth/users/")
+    response = await client.delete("/unsubscribe/")
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
 
@@ -171,12 +171,12 @@ async def test_creads_already_exist(test_created_user, test_client):
     await anext(test_created_user)
 
     client = await anext(test_client)
-    response = await client.post("/auth/users/", json=CREATE_USER_CREDS_WRONG_EMAIL)
+    response = await client.post("/sign-up/", json=CREATE_USER_CREDS_WRONG_EMAIL)
     response_data = response.json()
     assert response.status_code == 400
     assert response_data["detail"] == "The email already exist"
 
-    response = await client.post("/auth/users/", json=CREATE_USER_CREDS_WRONG_USERNAME)
+    response = await client.post("/sign-up/", json=CREATE_USER_CREDS_WRONG_USERNAME)
     response_data = response.json()
     assert response.status_code == 400
     assert response_data["detail"] == "The username already exist"
@@ -194,7 +194,7 @@ async def test_client():
 @pytest.fixture
 async def test_created_user(test_client, test_access_token):
     client = await anext(test_client)
-    response = await client.post("/auth/users/", json=CREATE_USER_CREDS)
+    response = await client.post("/sign-up/", json=CREATE_USER_CREDS)
     response_data = response.json()
     assert response.status_code == 201
     assert response_data["detail"] == "Created"
@@ -204,7 +204,7 @@ async def test_created_user(test_client, test_access_token):
 
     token = await anext(test_access_token)
     client = await anext(test_client)
-    response = await client.delete("/auth/users/", headers={"Authorization": f"Bearer {token}"})
+    response = await client.delete("/unsubscribe/", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 204
 
     yield None
@@ -233,7 +233,7 @@ async def test_read_all(test_access_token, test_client):
     for check in response_data["checks"]:
         check_products(check["products"])
         check_formatted_date_from = datetime.datetime.strptime(check["created_at"].split("T")[0], "%Y-%m-%d")
-        assert check["url"].endswith(f'{check["check_id"]}/')
+        assert str(check["check_id"]) in check["url"]
         assert check_formatted_date_from >= formatted_date_from
         assert ANSWERS["total"] >= total_from
         assert ANSWERS["rest"] == check["rest"]
@@ -252,7 +252,7 @@ async def test_read_all(test_access_token, test_client):
 async def test_access_token(test_client):
     while True:
         client = await anext(test_client)
-        token_response = await client.post("/auth/token/", data=LOGIN_USER_CREDS)
+        token_response = await client.post("/login/", data=LOGIN_USER_CREDS)
         token_response_data = token_response.json()
         assert token_response.status_code == 200
         assert token_response_data["access_token"] != "undefined"

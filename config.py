@@ -11,3 +11,4 @@ class Config:
     ADMIN_DB_USER = config("ADMIN_DB_USER")
     ADMIN_DB_PASSWORD = config("ADMIN_DB_PASSWORD")
     DB_HOST = config("DB_HOST")
+    TOKEN_EXPIRATION_MINUTES = config("TOKEN_EXPIRATION_MINUTES")

@@ -13,7 +13,6 @@ else:
 
 DB_NAME = SQLALCHEMY_DATABASE_URL.split("/")[-1]
 
-
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
 )

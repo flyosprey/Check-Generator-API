@@ -2,13 +2,20 @@
 
 Welcome to the **Check Generator API** repository! This project leverages the power of FastAPI and PostgreSQL to provide a simple yet efficient API for generating checks.
 
+## Requirements
+
+Make sure that you have installed:
+
+1. PostgreSQL
+2. Python3.11
+
 ## Overview
 
 The **Check Generator API** is a web application built using FastAPI, a modern and high-performance Python web framework. It offers an intuitive interface to create, view.
 
 ## Features
 
-- Create new checks with customizable fields such as recipient, amount, date, and memo.
+- Create new checks with customizable fields such as buyer_name, amount, date.
 - Retrieve a list of checks with filtering and sorting options.
 - View detailed information about individual checks.
 - Built-in Swagger documentation for easy API exploration.
@@ -76,3 +83,8 @@ View detailed information about a specific check identified by its unique `check
 **POST** `http://127.0.0.1:8000/checks`
 
 Create a new check by providing the necessary details such as buyer name, amount, quantity, date. This endpoint is used to generate new checks.
+
+
+## Additional
+
+1. **You can change develop environment to QA or DEV.**
