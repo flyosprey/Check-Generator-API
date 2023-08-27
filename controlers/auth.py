@@ -27,7 +27,7 @@ async def registration(user_data: CreateUser, db: Session = Depends(get_db)):
     if db.query(models.Users).filter(models.Users.username == user_data.username).first():
         raise bad_request_exception(detail="The username already exist")
 
-    user_id = create_user(user_data=user_data, db=db)
+    user_id = await create_user(user_data=user_data, db=db)
 
     return {"detail": "Created", "user_id": user_id}
 
@@ -37,7 +37,7 @@ async def unsubscribe(db: Session = Depends(get_db), user: dict = Depends(get_cu
     if user is None:
         raise get_user_exception()
 
-    delete_user(user_id=user["id"], db=db)
+    await delete_user(user_id=user["id"], db=db)
 
 
 @router.post("/login/", status_code=status.HTTP_200_OK)

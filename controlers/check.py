@@ -41,7 +41,7 @@ async def read_all(
         "payment_type": payment_type
     }
 
-    filtered_checks = get_filtered_checks(filters=filters, user_id=user["id"], url=request.url, db=db)
+    filtered_checks = await get_filtered_checks(filters=filters, user_id=user["id"], url=request.url, db=db)
 
     return filtered_checks
 
@@ -53,7 +53,7 @@ async def view_check(request: Request, check_id: str, signature: str, db: Sessio
     if signature != expected_signature:
         raise bad_request_exception(detail="Invalid signature")
 
-    check = get_check_by_id(check_id=check_id, db=db)
+    check = await get_check_by_id(check_id=check_id, db=db)
     if not check:
         raise not_found_exception(detail="Check not found")
 
@@ -68,6 +68,6 @@ async def create_check(order: Order, user: dict = Depends(get_current_user), db:
     if user is None:
         raise get_user_exception()
 
-    response = add_check_to_db(order=order, user_id=user["id"], db=db)
+    response = await add_check_to_db(order=order, user_id=user["id"], db=db)
 
     return response

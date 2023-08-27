@@ -65,7 +65,7 @@ def get_current_user(token: str = Security(oauth2_bearer)):
         raise get_user_exception()
 
 
-def create_user(user_data, db) -> int:
+async def create_user(user_data, db) -> int:
     create_user_model = models.Users()
     create_user_model.email = user_data.email
     create_user_model.username = user_data.username
@@ -78,7 +78,7 @@ def create_user(user_data, db) -> int:
     return create_user_model.id
 
 
-def delete_user(user_id: int, db):
+async def delete_user(user_id: int, db):
     user_to_delete = db.query(models.Users).options(joinedload(models.Users.checks)).get(user_id)
 
     db.delete(user_to_delete)

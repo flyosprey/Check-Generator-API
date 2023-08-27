@@ -46,7 +46,7 @@ def serialize_check(url_obj, check: models.Checks) -> dict:
     }
 
 
-def get_filtered_checks(filters: dict, user_id: int, url, db) -> dict:
+async def get_filtered_checks(filters: dict, user_id: int, url, db) -> dict:
     user = db.query(models.Users).filter(models.Users.id == user_id).first()
     query = (db.query(models.Checks).filter(models.Checks.owner == user).options(joinedload(models.Checks.products)))
 
@@ -72,7 +72,7 @@ def get_filtered_checks(filters: dict, user_id: int, url, db) -> dict:
     return response_data
 
 
-def add_check_to_db(order, user_id: int, db) -> dict:
+async def add_check_to_db(order, user_id: int, db) -> dict:
     total = sum([product.price * product.quantity for product in order.products])
     if total > order.payment.amount:
         raise bad_request_exception(detail="Payment amount cannot be less than total product's cost")
@@ -115,7 +115,7 @@ def add_check_to_db(order, user_id: int, db) -> dict:
     return response
 
 
-def get_check_by_id(check_id: str, db):
+async def get_check_by_id(check_id: str, db):
     return (
         db.query(models.Checks)
         .filter(models.Checks.id == check_id)
