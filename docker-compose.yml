@@ -1,0 +1,40 @@
+version: "3.10"
+
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_HOST=postgresql
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
+      - DATABASE_NAME=shift_automation
+      - DATABASE_URL=postgresql://user:password@postgresql/TEST
+      - SECRET_KEY=KlgH6AzYDeZeGwD288to79I3vTHT8wp7
+      - QA_DATABASE_URL=postgresql://user:password@postgresql/TESTQA
+      - ALGORITHM=HS256
+      - ENVIRONMENT=QA
+      - TOKEN_EXPIRATION_MINUTES=30
+      - ADMIN_DB=postgres
+      - ADMIN_DB_USER=user
+      - ADMIN_DB_PASSWORD=password
+      - DB_HOST=postgresql
+    depends_on:
+      - postgresql
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--reload"]
+
+  postgresql:
+    image: postgres:12-alpine
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:rw
+    environment:
+          POSTGRES_USER: ${POSTGRES_USER-user}
+          POSTGRES_PASSWORD: ${POSTGRES_PASSWORD-password}
+          POSTGRES_DB: ${POSTGRES_DB-db}
+    ports:
+      - "54329:5432"
+
+volumes:
+  postgres-data:
