@@ -1,9 +1,9 @@
+import copy
+import datetime
+import json
 import random
 import string
-import datetime
 from typing import List
-import json
-import copy
 
 import pytest
 from httpx import AsyncClient
@@ -13,56 +13,47 @@ from main import app
 
 def generate_random_value(length: int = 10) -> str:
     characters = string.ascii_letters + string.digits
-    value = ''.join(random.choice(characters) for _ in range(length))
+    value = "".join(random.choice(characters) for _ in range(length))
 
     return value
 
 
 ANSWERS = {
-    "total": 18.75, "rest": 11.25, "payment": {"amount": 30.0, "type": "cash"}, "buyer_name": "FOP Pytest 1",
+    "total": 18.75,
+    "rest": 11.25,
+    "payment": {"amount": 30.0, "type": "cash"},
+    "buyer_name": "FOP Pytest 1",
     "products": [
         {"name": "Phone", "price": 10.0, "quantity": 1, "total": 10.0},
         {"name": "Banana", "price": 0.5, "quantity": 10, "total": 5.0},
-        {"name": "Apple", "price": 0.75, "quantity": 5, "total": 3.75}
-    ]
+        {"name": "Apple", "price": 0.75, "quantity": 5, "total": 3.75},
+    ],
 }
 EMAIL = f"test_{generate_random_value()}@example.com"
 USER_NAME = f"test_{generate_random_value()}"
 PASSWORD = f"test_{generate_random_value()}"
 
-CREATE_USER_CREDS = {
-    "email": EMAIL,
-    "username": USER_NAME,
-    "password": PASSWORD
-}
+CREATE_USER_CREDS = {"email": EMAIL, "username": USER_NAME, "password": PASSWORD}
 
 CREATE_USER_CREDS_WRONG_EMAIL = {
     "email": EMAIL,
     "username": "test_user",
-    "password": "test_password"
+    "password": "test_password",
 }
 
 CREATE_USER_CREDS_WRONG_USERNAME = {
     "email": "test@example.com",
     "username": USER_NAME,
-    "password": "test_password"
+    "password": "test_password",
 }
 
-LOGIN_USER_CREDS = {
-    "username": USER_NAME,
-    "password": PASSWORD
-}
-WRONG_LOGIN_USER_CREDS = {
-    "username": "test_user",
-    "password": "test_password"
-}
+LOGIN_USER_CREDS = {"username": USER_NAME, "password": PASSWORD}
+WRONG_LOGIN_USER_CREDS = {"username": "test_user", "password": "test_password"}
 
 
 @pytest.mark.asyncio
 async def test_full_user_life_circle(
-        test_created_user,
-        test_read_all,
-        test_create_check
+    test_created_user, test_read_all, test_create_check
 ):
     await anext(test_created_user)
     await test_create_check
@@ -92,7 +83,9 @@ async def test_login_wrong_creds(test_client):
 
 
 @pytest.mark.asyncio
-async def test_create_check_bad_payload(test_client, test_access_token, test_created_user):
+async def test_create_check_bad_payload(
+    test_client, test_access_token, test_created_user
+):
     await anext(test_created_user)
     token = await anext(test_access_token)
     payload, headers = prepare_create_check_request(token)
@@ -204,7 +197,9 @@ async def test_created_user(test_client, test_access_token):
 
     token = await anext(test_access_token)
     client = await anext(test_client)
-    response = await client.delete("/unsubscribe/", headers={"Authorization": f"Bearer {token}"})
+    response = await client.delete(
+        "/unsubscribe/", headers={"Authorization": f"Bearer {token}"}
+    )
     assert response.status_code == 204
 
     yield None
@@ -219,10 +214,14 @@ async def test_read_all(test_access_token, test_client):
     response = await client.get(
         "/checks/",
         params={
-            "page": 1, "per_page": per_page, "date_from": date_from,
-            "payment_type": payment_type, "total_from": total_from
+            "page": 1,
+            "per_page": per_page,
+            "date_from": date_from,
+            "payment_type": payment_type,
+            "total_from": total_from,
         },
-        headers={"Authorization": f"Bearer {token}"})
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     response_data = response.json()
     assert response.status_code == 200
@@ -232,7 +231,9 @@ async def test_read_all(test_access_token, test_client):
     formatted_date_from = datetime.datetime.strptime(date_from, "%d/%m/%Y")
     for check in response_data["checks"]:
         check_products(check["products"])
-        check_formatted_date_from = datetime.datetime.strptime(check["created_at"].split("T")[0], "%Y-%m-%d")
+        check_formatted_date_from = datetime.datetime.strptime(
+            check["created_at"].split("T")[0], "%Y-%m-%d"
+        )
         assert str(check["check_id"]) in check["url"]
         assert check_formatted_date_from >= formatted_date_from
         assert ANSWERS["total"] >= total_from
@@ -304,34 +305,19 @@ def check_products(products: List[dict]):
 def prepare_create_check_request(token: str):
     payload = {
         "products": [
-            {
-                "name": "Phone",
-                "price": 10.0,
-                "quantity": 1
-            },
-            {
-                "name": "Banana",
-                "price": 0.5,
-                "quantity": 10
-            },
-            {
-                "name": "Apple",
-                "price": 0.75,
-                "quantity": 5
-            }
+            {"name": "Phone", "price": 10.0, "quantity": 1},
+            {"name": "Banana", "price": 0.5, "quantity": 10},
+            {"name": "Apple", "price": 0.75, "quantity": 5},
         ],
-        "payment": {
-            "type": "cash",
-            "amount": 30.0
-        },
+        "payment": {"type": "cash", "amount": 30.0},
         "comment": "Please, be happy!",
-        "buyer_name": "FOP Pytest 1"
+        "buyer_name": "FOP Pytest 1",
     }
 
     headers = {
-        'accept': 'application/json',
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
+        "accept": "application/json",
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
     }
 
     return payload, headers

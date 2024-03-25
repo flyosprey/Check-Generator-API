@@ -1,18 +1,19 @@
 import datetime
-
-import hmac
 import hashlib
-from sqlalchemy.orm import joinedload
+import hmac
+
 from sqlalchemy import asc
+from sqlalchemy.orm import joinedload
 
-from utils.exceptions import bad_request_exception
 import models
-
 from config import Config
+from utils.exceptions import bad_request_exception
 
 
 def generate_signature(check_id) -> str:
-    return hmac.new(Config.SECRET_KEY.encode(), str(check_id).encode(), hashlib.sha256).hexdigest()
+    return hmac.new(
+        Config.SECRET_KEY.encode(), str(check_id).encode(), hashlib.sha256
+    ).hexdigest()
 
 
 def generate_check_url(url_obj, check_id: int) -> str:
@@ -39,16 +40,20 @@ def serialize_check(url_obj, check: models.Checks) -> dict:
                 "name": product.name,
                 "price": product.price,
                 "quantity": product.quantity,
-                "total": product.total
+                "total": product.total,
             }
             for product in check.products
-        ]
+        ],
     }
 
 
 async def get_filtered_checks(filters: dict, user_id: int, url, db) -> dict:
     user = db.query(models.Users).filter(models.Users.id == user_id).first()
-    query = (db.query(models.Checks).filter(models.Checks.owner == user).options(joinedload(models.Checks.products)))
+    query = (
+        db.query(models.Checks)
+        .filter(models.Checks.owner == user)
+        .options(joinedload(models.Checks.products))
+    )
 
     if filters["total_from"]:
         query = query.filter(models.Checks.total >= float(filters["total_from"]))
@@ -59,14 +64,13 @@ async def get_filtered_checks(filters: dict, user_id: int, url, db) -> dict:
         query = query.filter(models.Checks.created_at >= date_from)
 
     query = query.order_by(asc(models.Checks.created_at))
-    query = query.offset(filters["per_page"] * (filters["page"] - 1)).limit(filters["per_page"] * filters["page"])
+    query = query.offset(filters["per_page"] * (filters["page"] - 1)).limit(
+        filters["per_page"] * filters["page"]
+    )
 
     response_data = {
         "total_count": query.count(),
-        "checks": [
-            serialize_check(url, check)
-            for check in query.all()
-        ]
+        "checks": [serialize_check(url, check) for check in query.all()],
     }
 
     return response_data
@@ -75,7 +79,9 @@ async def get_filtered_checks(filters: dict, user_id: int, url, db) -> dict:
 async def add_check_to_db(order, user_id: int, db) -> dict:
     total = sum([product.price * product.quantity for product in order.products])
     if total > order.payment.amount:
-        raise bad_request_exception(detail="Payment amount cannot be less than total product's cost")
+        raise bad_request_exception(
+            detail="Payment amount cannot be less than total product's cost"
+        )
 
     check_model = models.Checks()
     check_model.created_at = datetime.datetime.utcnow()
@@ -93,8 +99,15 @@ async def add_check_to_db(order, user_id: int, db) -> dict:
     for product in order.products:
         total_price = product.price * product.quantity
         products.append({**product.__dict__, "total": total_price})
-        product_models.append(models.Products(name=product.name, check_id=check_model.id, price=product.price,
-                                              quantity=product.quantity, total=total_price))
+        product_models.append(
+            models.Products(
+                name=product.name,
+                check_id=check_model.id,
+                price=product.price,
+                quantity=product.quantity,
+                total=total_price,
+            )
+        )
 
     db.bulk_save_objects(product_models)
     db.commit()
@@ -104,12 +117,12 @@ async def add_check_to_db(order, user_id: int, db) -> dict:
         "products": products,
         "payment": {
             "amount": check_model.payment_amount,
-            "type": check_model.payment_type
+            "type": check_model.payment_type,
         },
         "total": check_model.total,
         "rest": check_model.rest,
         "created_at": check_model.created_at,
-        "buyer_name": check_model.buyer_name
+        "buyer_name": check_model.buyer_name,
     }
 
     return response
