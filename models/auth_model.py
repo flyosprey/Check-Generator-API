@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -13,4 +13,6 @@ class Users(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
 
-    checks = relationship("Checks", back_populates="owner", cascade="all, delete-orphan")
+    checks = relationship(
+        "Checks", back_populates="owner", cascade="all, delete-orphan"
+    )

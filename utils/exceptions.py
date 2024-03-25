@@ -27,4 +27,3 @@ def token_exception():
     )
 
     return token_exception_response
-

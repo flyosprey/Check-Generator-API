@@ -2,16 +2,14 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import Security
-from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import joinedload
 
 import models
-from utils.exceptions import get_user_exception
-
 from config import Config
-
+from utils.exceptions import get_user_exception
 
 SECRET_KEY = Config.SECRET_KEY
 ALGORITHM = Config.ALGORITHM
@@ -29,9 +27,7 @@ def verify_password(plain_password, hashed_password):
 
 
 def authenticate_user(username: str, password: str, db):
-    user = db.query(models.Users)\
-        .filter(models.Users.username == username)\
-        .first()
+    user = db.query(models.Users).filter(models.Users.username == username).first()
 
     if not user:
         return False
@@ -41,7 +37,9 @@ def authenticate_user(username: str, password: str, db):
     return user
 
 
-def create_access_token(username: str, user_id: int, expires_delta: Optional[timedelta] = None):
+def create_access_token(
+    username: str, user_id: int, expires_delta: Optional[timedelta] = None
+):
     encode = {"sub": username, "id": user_id}
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -79,7 +77,9 @@ async def create_user(user_data, db) -> int:
 
 
 async def delete_user(user_id: int, db):
-    user_to_delete = db.query(models.Users).options(joinedload(models.Users.checks)).get(user_id)
+    user_to_delete = (
+        db.query(models.Users).options(joinedload(models.Users.checks)).get(user_id)
+    )
 
     db.delete(user_to_delete)
     db.commit()
